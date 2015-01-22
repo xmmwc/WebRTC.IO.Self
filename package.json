@@ -1,0 +1,12 @@
+{
+  "name": "WebRTC.IO.Test",
+  "version": "0.0.1",
+  "scripts":{
+    "start":"node ./server"
+  },
+  "dependencies":{
+    "webrtc.io":"latest",
+    "socket.io":"latest",
+    "express":"latest"
+  }
+}
