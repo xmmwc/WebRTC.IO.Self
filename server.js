@@ -3,13 +3,16 @@
  **/
 
 var express = require('express');
-var webrtc = require('webrtc.io');
+var webrtc = require('./lib/webrtc');
 
-webrtc.listen(8080);
+var server = webrtc.listen(8080);
 
 var client = express();
 
 client.use(express.static(__dirname + '/public'));
+client.get('/io',function(req,res){
+    server.serve(req,res);
+});
 client.get('/',function(req,res){
     res.sendFile(__dirname + '/public/index.html');
 });

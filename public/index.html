@@ -6,7 +6,8 @@
     <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
     <script src="http://cdn.bootcss.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
-    <script src="js/webrtc.io.js"></script>
+    <script src="/io"></script>
+    <script src="js/webrtc.js"></script>
     <link rel="stylesheet" href="css/bootstrap.css">
 
     <style>
@@ -59,9 +60,8 @@
     $('#add').click(function(){
         var room = $('#room_name').val();
         if(room){
-            rtc.connect('ws://192.168.1.64:8080');
+            rtc.connect('ws://192.168.1.8:8080',room);
             createStream(true,true);
-            //rtc.fire('ready');
         }
     });
 
