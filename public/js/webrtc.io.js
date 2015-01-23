@@ -2,7 +2,9 @@
 
  // Fallbacks for vendor-specific variables until the spec is finalized.
 	
-var PeerConnection = window.PeerConnection || window.webkitPeerConnection00 || window.webkitRTCPeerConnection;
+var PeerConnection = window.PeerConnection || window.webkitPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var SessionDescription = window.RTCSessionDescription || window.webkitSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription;
+var IceCandidate = window.RTCIceCandidate || window.webkitIceCandidate || window.mozRTCIceCandidate || window.webkitRTCIceCandidate;
 var URL = window.URL || window.webkitURL || window.msURL || window.oURL;
 var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -41,7 +43,17 @@ var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || nav
   };
 
   // Holds the STUN/ICE server to use for PeerConnections.
-  rtc.SERVER = {iceServers:[{url:"stun:stun.l.google.com:19302"}]};
+  rtc.SERVER = {
+      iceServers: [
+          {url: "stun:stun.l.google.com:19302"},
+          {url: 'stun:stun.stunprotocol.org:3478'},
+          {url: 'stun:stun.xten.com'},
+          {url: 'stun:stun.fwdnet.net'},
+          {url: 'stun:stun.fwdnet.net:3478'},
+          {url: 'stun:stun.wirlab.net'},
+          {url: 'stun:stun.softjoys.com:3478'}
+      ]
+  };
 
   // Referenc e to the lone PeerConnection instance.
   rtc.peerConnections = {};
@@ -64,12 +76,12 @@ var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || nav
 
       rtc._socket.send(JSON.stringify({
         "eventName": "join_room",
-        "data":{
-          "room": room
+            "data":{
+            "room": room
         }
-      }), function(error){
+    }), function(error){
           if(error){console.log(error);}
-        });
+      });
 
       rtc._socket.onmessage = function(msg) {
         var json = JSON.parse(msg.data);
@@ -93,7 +105,7 @@ var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || nav
       });
 
       rtc.on('receive_ice_candidate', function(data) {
-    	var candidate = new RTCIceCandidate(data);
+    	var candidate = new IceCandidate(data);
     	rtc.peerConnections[data.socketId].addIceCandidate(candidate);
         rtc.fire('receive ice candidate', candidate);
       });
@@ -179,52 +191,62 @@ var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || nav
   };
 
   rtc.sendOffer = function(socketId) {
-    var pc = rtc.peerConnections[socketId];
-    pc.createOffer( function(session_description) {
-    pc.setLocalDescription(session_description);
-    rtc._socket.send(JSON.stringify({
-        "eventName": "send_offer",
-        "data":{
-            "socketId": socketId,
-            "sdp": session_description
-            }
-        }), function(error){
-            if(error){console.log(error);
-        }
-   });
-    });
+      var pc = rtc.peerConnections[socketId];
+      pc.createOffer(function (session_description) {
+          pc.setLocalDescription(session_description);
+          rtc._socket.send(JSON.stringify({
+              "eventName": "send_offer",
+              "data": {
+                  "socketId": socketId,
+                  "sdp": session_description
+              }
+          }), function (error) {
+              if (error) {
+                  console.log(error);
+              }
+          });
+      },function(error){
+          if (error) {
+              console.log(error);
+          }
+      });
   };
 
 
   rtc.receiveOffer = function(socketId, sdp) {
     var pc = rtc.peerConnections[socketId];
-    pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    pc.setRemoteDescription(new SessionDescription(sdp));
     rtc.sendAnswer(socketId);
   };
 
 
   rtc.sendAnswer = function(socketId) {
-    var pc = rtc.peerConnections[socketId];
-    pc.createAnswer( function(session_description) {
-    pc.setLocalDescription(session_description);
-    rtc._socket.send(JSON.stringify({
-        "eventName": "send_answer",
-        "data":{
-            "socketId": socketId,
-            "sdp": session_description
-            }
-        }), function(error){
-            if(error){console.log(error);
-        }
-   });
-    var offer = pc.remoteDescription;
-    });
+      var pc = rtc.peerConnections[socketId];
+      pc.createAnswer(function (session_description) {
+          pc.setLocalDescription(session_description);
+          rtc._socket.send(JSON.stringify({
+              "eventName": "send_answer",
+              "data": {
+                  "socketId": socketId,
+                  "sdp": session_description
+              }
+          }), function (error) {
+              if (error) {
+                  console.log(error);
+              }
+          });
+          var offer = pc.remoteDescription;
+      },function(error){
+          if (error) {
+              console.log(error);
+          }
+      });
   };
 
 
   rtc.receiveAnswer = function(socketId, sdp) {
     var pc = rtc.peerConnections[socketId];
-    pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    pc.setRemoteDescription(new SessionDescription(sdp));
   };
 
 

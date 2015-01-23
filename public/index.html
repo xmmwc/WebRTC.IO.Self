@@ -6,7 +6,6 @@
     <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
     <script src="http://cdn.bootcss.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
-    <script src="/io"></script>
     <script src="js/webrtc.io.js"></script>
     <link rel="stylesheet" href="css/bootstrap.css">
 
@@ -31,10 +30,6 @@
     <div class="row">
         <div class="form-inline text-center">
             <div class="form-group">
-                <label for="person_name" class="sr-only">姓名</label>
-                <input class="form-control" id="person_name" placeholder="姓名">
-            </div>
-            <div class="form-group">
                 <label for="room_name" class="sr-only">房间名</label>
                 <input class="form-control" id="room_name" placeholder="房间名">
             </div>
@@ -49,17 +44,26 @@
             '</div>' +
             '</div>';
     var remoteVideos = $('#remote_videos');
+
     var createStream = function (audio,video) {
         rtc.createStream({
             video:video,
             audio:audio
         },function(stream){
             rtc.attachStream(stream,'local');
+        },function(){
+
         });
     };
 
-    rtc.connect('ws://localhost:8080');
-    createStream(true,true);
+    $('#add').click(function(){
+        var room = $('#room_name').val();
+        if(room){
+            rtc.connect('ws://192.168.1.64:8080');
+            createStream(true,true);
+            //rtc.fire('ready');
+        }
+    });
 
     rtc.on('add remote stream',function(stream,id){
         var remoteVideo_c = $(videoTemplates);
@@ -67,6 +71,10 @@
         remoteVideos.append(remoteVideo);
         rtc.attachStream(stream,'remote' + id);
     });
+
+    rtc.on('disconnect stream',function(id){
+        $('#remote' + id).parents('.row').remove();
+    })
 </script>
 </body>
 </html>
