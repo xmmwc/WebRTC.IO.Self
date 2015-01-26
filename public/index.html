@@ -60,7 +60,7 @@
     $('#add').click(function(){
         var room = $('#room_name').val();
         if(room){
-            rtc.connect('ws://localhost:8080',room);
+            rtc.connect('ws://192.168.1.64:8080',room);
             createStream(true,true);
         }
     });
@@ -74,7 +74,8 @@
 
     rtc.on('disconnect stream',function(id){
         $('#remote' + id).parents('.row').remove();
-    })
+    });
+
 </script>
 </body>
 </html>
