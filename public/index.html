@@ -68,7 +68,7 @@
     rtc.on('add remote stream',function(stream,id){
         var remoteVideo_c = $(videoTemplates);
         var remoteVideo = remoteVideo_c.find('video').attr('id','remote' + id);
-        remoteVideos.append(remoteVideo);
+        remoteVideos.append(remoteVideo_c);
         rtc.attachStream(stream,'remote' + id);
     });
 
