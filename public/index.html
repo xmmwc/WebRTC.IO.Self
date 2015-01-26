@@ -61,7 +61,7 @@
         oneRemoteVideo.get(0).src = url;
     };
     createStream(true,true);
-    rtc.connect('ws://192.168.1.64:8080');
+    rtc.connect('ws://222.244.248.237:8080');
 
     rtc.on('add remote stream',function(stream,id){
         var remoteVideo_c = $(videoTemplates).click(function(){

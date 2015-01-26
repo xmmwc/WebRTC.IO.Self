@@ -51,7 +51,13 @@ if (navigator.webkitGetUserMedia) {
         }
         return {
             "iceServers": [{
-                "url": "stun:stun.l.google.com:19302"
+                url: 'stun:stun.iptel.org'
+            }, {
+                url: 'stun:stun.fwdnet.net'
+            }, {
+                url: 'stun:stunserver.org'
+            }, {
+                url: "stun:stun.l.google.com:19302"
             }]
         };
     };
@@ -285,7 +291,7 @@ if (navigator.webkitGetUserMedia) {
             });
             if(rtc.isNonStream)
                 rtc.socket.emit('send_non_stream',{
-                    socketId: socketId,
+                    socketId: socketId
                 });
             var offer = pc.remoteDescription;
         },function(error){
