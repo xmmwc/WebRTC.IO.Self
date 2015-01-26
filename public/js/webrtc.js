@@ -39,6 +39,7 @@ if (navigator.webkitGetUserMedia) {
     rtc.socket = null;
     rtc.events = {};
     rtc.me = null;
+    rtc.debug = true;
 
     rtc.SERVER = function() {
         if (navigator.mozGetUserMedia) {
