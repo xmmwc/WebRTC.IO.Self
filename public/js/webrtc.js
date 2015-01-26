@@ -127,13 +127,14 @@ if (navigator.webkitGetUserMedia) {
 
         rtc.socket.on('get_peers',function(data){
             rtc.connections = data.connections;
-            if (rtc.offerSent) { // 'ready' was fired before 'get_peers'
+            if (rtc.offerSent) {
                 rtc.createPeerConnections();
                 rtc.addStreams();
                 rtc.addDataChannels();
                 rtc.sendOffers();
             }
             rtc.fire('connections', rtc.connections);
+            rtc.fire('peer change',rtc.connections);
         });
 
         rtc.socket.on('disconnect',function(data) {
@@ -143,7 +144,10 @@ if (navigator.webkitGetUserMedia) {
                 rtc.peerConnections[id].close();
             delete rtc.peerConnections[id];
             delete rtc.dataChannels[id];
-            delete rtc.connections[id];
+            var index = rtc.connections.indexOf(id);
+            if(index>=0){
+                rtc.connections.splice(index,1);
+            }
         });
 
         rtc.socket.on('receive_ice_candidate',function(data){
@@ -162,6 +166,7 @@ if (navigator.webkitGetUserMedia) {
                 var stream = rtc.streams[i];
                 pc.addStream(stream);
             }
+            rtc.fire('peer change',rtc.connections);
         });
 
         rtc.socket.on('remove_peer_connected',function(data){
@@ -171,7 +176,11 @@ if (navigator.webkitGetUserMedia) {
                 rtc.peerConnections[id].close();
             delete rtc.peerConnections[id];
             delete rtc.dataChannels[id];
-            delete rtc.connections[id];
+            var index = rtc.connections.indexOf(id);
+            if(index>=0){
+                rtc.connections.splice(index,1);
+            }
+            rtc.fire('peer change',rtc.connections);
         });
 
         rtc.socket.on('receive_offer',function(data){

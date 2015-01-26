@@ -9,72 +9,78 @@
     <script src="js/socket.io.js"></script>
     <script src="js/webrtc.js"></script>
     <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/index.css">
 
-    <style>
-        .container video{
-            width: 100%;
-        }
-    </style>
 </head>
 <body>
-<div class="container">
-    <div class="row" style="margin-top: 15px;">
-        <div class="col-md-6 col-md-offset-3">
-            <video id="local" autoplay muted></video>
-        </div>
+<div class="main_video">
+    <div class="local_video">
+        <video id="local_video" autoplay muted></video>
     </div>
-    <div class="row">
-        <div class="col-md-12" id="remote_videos">
-
-        </div>
-    </div>
-    <div class="row">
-        <div class="form-inline text-center">
-            <div class="form-group">
-                <label for="room_name" class="sr-only">房间名</label>
-                <input class="form-control" id="room_name" placeholder="房间名">
-            </div>
-            <button id="add" class="btn btn-default">加入房间</button>
-        </div>
-    </div>
+    <video id="one_remote_video" autoplay></video>
 </div>
+<div class="right_video">
+    <ul class="list-unstyled" id="remote_videos">
+
+    </ul>
+</div>
+
+
+
 <script>
-    var videoTemplates = '<div class="row">' +
-            '<div class="col-md-6 col-md-offset-3">' +
+    var videoTemplates = '<li class="videos">' +
+            '<div class="pad">' +
             '<video class="remote" autoplay></video>' +
             '</div>' +
-            '</div>';
+            '</li>';
     var remoteVideos = $('#remote_videos');
+    var oneRemoteVideo = $('#one_remote_video');
 
     var createStream = function (audio,video) {
         rtc.createStream({
             video:video,
             audio:audio
         },function(stream){
-            rtc.attachStream(stream,'local');
+            rtc.attachStream(stream,'local_video');
         },function(){
 
         });
     };
 
-    $('#add').click(function(){
-        var room = $('#room_name').val();
-        if(room){
-            rtc.connect('ws://192.168.1.64:8080',room);
-            createStream(true,true);
+    var setMainScreen = function(){
+        var videos = remoteVideos.find('video');
+        $('.local_video').toggleClass('remote_connected',videos.length > 0);
+        if(videos.length == 1){
+            var url = videos.get(0).src;
+            setVideoToScreen(url);
+        }else if(videos.length == 0){
+            setVideoToScreen('');
         }
-    });
+    };
+    var setVideoToScreen = function(url){
+        oneRemoteVideo.get(0).src = url;
+    };
+    createStream(true,true);
+    rtc.connect('ws://192.168.1.64:8080');
 
     rtc.on('add remote stream',function(stream,id){
-        var remoteVideo_c = $(videoTemplates);
+        var remoteVideo_c = $(videoTemplates).click(function(){
+            var my_video = $(this).find('video');
+            var url = my_video.get(0).src;
+            setVideoToScreen(url);
+        });
         var remoteVideo = remoteVideo_c.find('video').attr('id','remote' + id);
         remoteVideos.append(remoteVideo_c);
         rtc.attachStream(stream,remoteVideo.get(0));
+
+        setMainScreen();
     });
 
     rtc.on('disconnect stream',function(id){
-        $('#remote' + id).parents('.row').remove();
+        $('#remote' + id).parents('.videos').remove();
+        setMainScreen();
     });
+
 
 </script>
 </body>
