@@ -71,7 +71,11 @@
         });
         var remoteVideo = remoteVideo_c.find('video').attr('id','remote' + id);
         remoteVideos.append(remoteVideo_c);
-        rtc.attachStream(stream,remoteVideo.get(0));
+        if(stream){
+            rtc.attachStream(stream,remoteVideo.get(0));
+        }else{
+            remoteVideo_c.find('.pad').append("<span class='non_stream'>没有视频信息</span>");
+        }
 
         setMainScreen();
     });

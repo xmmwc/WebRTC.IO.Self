@@ -134,7 +134,6 @@ if (navigator.webkitGetUserMedia) {
                 rtc.sendOffers();
             }
             rtc.fire('connections', rtc.connections);
-            rtc.fire('peer change',rtc.connections);
         });
 
         rtc.socket.on('disconnect',function(data) {
@@ -166,7 +165,6 @@ if (navigator.webkitGetUserMedia) {
                 var stream = rtc.streams[i];
                 pc.addStream(stream);
             }
-            rtc.fire('peer change',rtc.connections);
         });
 
         rtc.socket.on('remove_peer_connected',function(data){
@@ -180,7 +178,10 @@ if (navigator.webkitGetUserMedia) {
             if(index>=0){
                 rtc.connections.splice(index,1);
             }
-            rtc.fire('peer change',rtc.connections);
+        });
+
+        rtc.socket.on('receive_non_stream',function(data){
+            rtc.fire('add remote stream', null, data.socketId);
         });
 
         rtc.socket.on('receive_offer',function(data){
@@ -282,6 +283,10 @@ if (navigator.webkitGetUserMedia) {
                 socketId: socketId,
                 sdp: session_description
             });
+            if(rtc.isNonStream)
+                rtc.socket.emit('send_non_stream',{
+                    socketId: socketId,
+                });
             var offer = pc.remoteDescription;
         },function(error){
             if (error) {
@@ -315,7 +320,20 @@ if (navigator.webkitGetUserMedia) {
                     rtc.ready();
                 }
             }, function() {
-                alert("没有获取到视频流");
+                if(!options.video){
+                    options.video = false;
+                    rtc.createStream(options,onSuccess,onFail);
+                }else if(!options.audio){
+                    options.audio = false;
+                    rtc.createStream(options,onSuccess,onFail);
+                }else{
+                    rtc.streams.push(null);
+                    rtc.isNonStream = true;
+                    rtc.initializedStreams++;
+                    if (rtc.initializedStreams === rtc.numStreams) {
+                        rtc.ready();
+                    }
+                }
                 onFail();
             });
         } else {
@@ -328,7 +346,13 @@ if (navigator.webkitGetUserMedia) {
             var stream = rtc.streams[i];
             for (var connection in rtc.peerConnections) {
                 if(rtc.peerConnections.hasOwnProperty(connection)){
-                    rtc.peerConnections[connection].addStream(stream);
+                    if(stream){
+                        rtc.peerConnections[connection].addStream(stream);
+                    }else{
+                        rtc.socket.emit('send_non_stream',{
+                            socketId:connection
+                        });
+                    }
                 }
             }
         }
