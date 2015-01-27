@@ -2,7 +2,9 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="renderer" content="webkit">
+    <title>视频聊天室</title>
     <script src="http://cdn.bootcss.com/jquery/1.11.2/jquery.min.js"></script>
     <script src="http://cdn.bootcss.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 
@@ -24,9 +26,6 @@
 
     </ul>
 </div>
-
-
-
 <script>
     var videoTemplates = '<li class="videos">' +
             '<div class="pad">' +
@@ -61,7 +60,7 @@
         oneRemoteVideo.get(0).src = url;
     };
     createStream(true,true);
-    rtc.connect('ws://222.244.248.237:8080');
+    rtc.connect('ws://175.11.90.16:9011');
 
     rtc.on('add remote stream',function(stream,id){
         var remoteVideo_c = $(videoTemplates).click(function(){
